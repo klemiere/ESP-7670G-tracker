@@ -6,6 +6,7 @@ router = APIRouter()
 class Message(BaseModel):
     Msg: str
 
-@router.post("/test_route")
-async def create_post(post: Message):
-    return Message
+@router.get("/test_route")
+async def test():
+    print("Works")
+    return "Hello"
