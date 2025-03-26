@@ -13,7 +13,8 @@ class Sim {
     String simPIN;
     String simPUK;
     void checkSim();
-    void HttpInit();
+    void networkInit();
+    
 };
 
 #endif

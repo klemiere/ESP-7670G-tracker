@@ -9,7 +9,7 @@ String Sim::sendATCommand(String command, String expectedResponse, int timeoutIn
   unsigned long timeoutInMilliseconds = timeoutInSeconds * 1000;
   unsigned long startTime;
 
-  for (int i = 0; i <= retryAttempts; i++) {
+  for (int i = 0; i <= retryAttempts - 1; i++) {
     delay(500);
     simModule.println(command);
     startTime = millis();
@@ -22,17 +22,19 @@ String Sim::sendATCommand(String command, String expectedResponse, int timeoutIn
         if (printResponse) Serial.print(c);
 
         if (response.indexOf(expectedResponse) != -1) {
+          Serial.println();
           return response; // Return if successful
         }
       }
     }
 
-    Serial.println("Attempt " + String(i + 1) + " failed. Retrying...");
+    Serial.println("Attempt " + String(i + 1) + " failed.");
   }
 
   Serial.println("All attempts failed.");
   return response;
 }
+
 
 void Sim::checkSim(){
   String cpin = sendATCommand("AT+CPIN?", "OK", 1, 5);
@@ -51,13 +53,26 @@ void Sim::checkSim(){
     }
 }
 
-void Sim::HttpInit(){
-  sendATCommand("AT+CGDCONT=1, \"IP\", \"free\"", "OK", 1, 5, 1);
+void Sim::networkInit(){
+  String response = "";
+  sendATCommand("AT+CGDCONT=1, \"IP\", \"free\"", "OK", 1, 5, true); //define pdp context
+   do {
+    Serial.println("Acquiring network");
+    response = sendATCommand("AT+CREG?", "+CREG: 0,1", 20, 6, true); //Check if the sim is registered to a network
+    //TODO: This only works on a home network, add roaming support
+   } while (response.indexOf("+CREG: 0,1") == -1);
+   delay(2000);
+   while (simModule.available()) {
+    simModule.read();  // Clear any leftover data in the buffer
+   }
+   sendATCommand("AT+CGATT?", "OK", 1, 2, true);
 }
 
 void Sim::init(){
   Serial.println("Checking sim status...");
   checkSim();
   Serial.println("Initializing HTTP...");
-  HttpInit();
+  networkInit();
+  sendATCommand("AT+HTTPTERM", "OK"); /*send termination signal in case http is still initialized,
+  this will print "Attempts failed" if it wasn't initialized but who cares*/
 }
