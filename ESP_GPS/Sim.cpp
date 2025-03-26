@@ -9,7 +9,7 @@ String Sim::sendATCommand(String command, String expectedResponse, int timeoutIn
   unsigned long timeoutInMilliseconds = timeoutInSeconds * 1000;
   unsigned long startTime;
 
-  for (int i = 0; i <= retryAttempts - 1; i++) {
+  for (int i = 0; i <= retryAttempts; i++) {
     delay(500);
     simModule.println(command);
     startTime = millis();
