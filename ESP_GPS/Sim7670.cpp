@@ -2,6 +2,7 @@
 
 
 
+
 String sendATCommand(HardwareSerial *sim7670, String command, String expectedResponse, int loopAmount, int debug) {
   String response = "";
   int count = 0;
@@ -21,6 +22,26 @@ String sendATCommand(HardwareSerial *sim7670, String command, String expectedRes
   return response;
 }
 
+String sendATCommandHTTP(HardwareSerial *sim7670, String command, String expectedResponse, int timeout, int debug) {
+  String response = "";
+  sim7670->println(command);
+  unsigned long startTime = millis();
+
+  while (millis() - startTime < timeout) {
+    if (sim7670->available()) {
+      char c = sim7670->read();
+      response += c;
+      if (debug == 1) Serial.print(c);  // Print character as it's received
+
+      // Check if response contains expectedResponse
+      if (response.indexOf(expectedResponse) != -1) {
+        return response;
+      }
+    }
+  }
+
+  return response;  // Return full response even if expectedResponse wasn't found
+}
 void checkSim(HardwareSerial *sim7670) {
   String cpin = sendATCommand(sim7670, "AT+CPIN?", "OK");
     
