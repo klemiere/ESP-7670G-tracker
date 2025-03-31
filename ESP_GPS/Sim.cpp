@@ -57,13 +57,13 @@ void Sim::networkInit(){
   do {
     Serial.println("Acquiring network...");
     response = sendATCommand("AT+CREG?", "+CREG:", 20, 1, true); // check if connected to network
-} while (response.indexOf("+CREG: 0,1") == -1 || response.indexOf("+CREG: 0,5") == -1);
-
+} while (response.indexOf("+CREG: 0,1") == -1 && response.indexOf("+CREG: 0,5") == -1);
   delay(2000);
-  while (simModule.available()) simModule.read();
-  Serial.flush();
+  while (simModule.available()) {
+   simModule.read();  // Clear any leftover data in the buffer
+  }
   sendATCommand("AT+CGACT=1,1", "OK", 1, 0, true);  // Activate PDP context
-  sendATCommand("AT+CGPADDR=1", "OK");  // Get assigned IP
+  sendATCommand("AT+CGPADDR=1", "OK", 1, 0, true);  // Get assigned IP
 }
 
 void Sim::init(){
