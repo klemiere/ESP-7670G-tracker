@@ -20,14 +20,12 @@ String Sim::sendATCommand(String command, String expectedResponse, int timeoutIn
         char c = simModule.read();
         response += c;
         if (printResponse) Serial.print(c);
-
-        if (response.indexOf(expectedResponse) != -1) {
-          Serial.println();
-          return response; // Return if successful
-        }
       }
     }
-
+    if (response.indexOf(expectedResponse) != -1) {
+          Serial.println();
+          return response; // Return if successful
+          }
     Serial.println("Attempt " + String(i + 1) + " failed.");
   }
 
@@ -58,14 +56,14 @@ void Sim::networkInit(){
   sendATCommand("AT+CGDCONT=1, \"IP\", \"free\"", "OK", 1, 5, true); //define pdp context
    do {
     Serial.println("Acquiring network");
-    response = sendATCommand("AT+CREG?", "+CREG: 0,1", 20, 6, true); //Check if the sim is registered to a network
+    response = sendATCommand("AT+CREG?", "+CREG: 0,1", 20, 1, true); //Check if the sim is registered to a network
     //TODO: This only works on a home network, add roaming support
    } while (response.indexOf("+CREG: 0,1") == -1);
    delay(2000);
    while (simModule.available()) {
     simModule.read();  // Clear any leftover data in the buffer
    }
-   sendATCommand("AT+CGATT?", "OK", 1, 2, true);
+   sendATCommand("AT+CGATT?", "OK", 1, 0, true);
 }
 
 void Sim::init(){
@@ -75,4 +73,5 @@ void Sim::init(){
   networkInit();
   sendATCommand("AT+HTTPTERM", "OK"); /*send termination signal in case http is still initialized,
   this will print "Attempts failed" if it wasn't initialized but who cares*/
+  Serial.println("HTTP initialized!");
 }
