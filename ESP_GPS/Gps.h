@@ -8,6 +8,7 @@ class Gps {
     Gps(Sim& sim);
     String sendATCommand(String command, String expectedResponse, int timeout = 1, bool printResponse = false);
     void getCoordinates();
+    void init();
   private:
     Sim& sim;
 };
