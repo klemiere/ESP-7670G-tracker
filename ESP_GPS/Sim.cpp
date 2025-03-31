@@ -69,9 +69,9 @@ void Sim::networkInit(){
 void Sim::init(){
   Serial.println("Checking sim status...");
   checkSim();
-  Serial.println("Initializing HTTP...");
+  Serial.println("Initializing 4G network...");
   networkInit();
   sendATCommand("AT+HTTPTERM", "OK"); /*send termination signal in case http is still initialized,
   this will print "Attempts failed" if it wasn't initialized but who cares*/
-  Serial.println("HTTP initialized!");
+  Serial.println("Network initialized!");
 }
