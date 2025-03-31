@@ -54,16 +54,16 @@ void Sim::checkSim(){
 void Sim::networkInit(){
   String response = "";
   sendATCommand("AT+CGDCONT=1, \"IP\", \"free\"", "OK", 1, 5, true); //define pdp context
-   do {
-    Serial.println("Acquiring network");
-    response = sendATCommand("AT+CREG?", "+CREG: 0,1", 20, 1, true); //Check if the sim is registered to a network
-    //TODO: This only works on a home network, add roaming support
-   } while (response.indexOf("+CREG: 0,1") == -1);
-   delay(2000);
-   while (simModule.available()) {
-    simModule.read();  // Clear any leftover data in the buffer
-   }
-   sendATCommand("AT+CGATT?", "OK", 1, 0, true);
+  do {
+    Serial.println("Acquiring network...");
+    response = sendATCommand("AT+CREG?", "+CREG:", 20, 1, true); // check if connected to network
+} while (response.indexOf("+CREG: 0,1") == -1 || response.indexOf("+CREG: 0,5") == -1);
+
+  delay(2000);
+  while (simModule.available()) simModule.read();
+  Serial.flush();
+  sendATCommand("AT+CGACT=1,1", "OK", 1, 0, true);  // Activate PDP context
+  sendATCommand("AT+CGPADDR=1", "OK");  // Get assigned IP
 }
 
 void Sim::init(){
