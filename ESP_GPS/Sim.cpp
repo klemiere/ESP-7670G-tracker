@@ -1,8 +1,10 @@
 #include <Sim.h>
 #include <Arduino.h>
+#include <ssl_web.h>
 
 Sim::Sim(HardwareSerial& serial, String simPIN, String simPUK) : simModule(serial), simPIN(simPIN), simPUK(simPUK){
 }
+
 
 String Sim::sendAT(String command, unsigned int timeoutInSeconds) {
   unsigned int timeoutInMillis = timeoutInSeconds * 1000;
@@ -24,6 +26,8 @@ String Sim::sendAT(String command, unsigned int timeoutInSeconds) {
   return response;
 }
 
+
+
 void Sim::checkSim(){
   String cpin = "";
   do {
@@ -34,12 +38,14 @@ void Sim::checkSim(){
       Serial.println("Sim ready, skipping PIN...");
     } else if (cpin.indexOf("SIM PIN") != -1) {
       Serial.println("Entering PIN...");
-      sendATCommand("AT+CPIN=" + simPIN, "OK", 1, true);
+      sendAT("AT+CPIN=" + simPIN);
     } else if (cpin.indexOf("SIM PUK") != -1){
       Serial.println("Entering PUK...");
-      sendATCommand("AT+CPIN=" + simPUK, "OK", 1, true);
+      sendAT("AT+CPIN=" + simPUK);
     }
 }
+
+
 
 void Sim::networkInit(){
   String response = "";
@@ -59,15 +65,37 @@ void Sim::networkInit(){
   sendAT("AT+CGPADDR=1");  // Get assigned IP
 }
 
+
+
 void Sim::SSLConfig(){
-  sendAT("AT+CSSLCFG=\"sslversion\",0,3", "OK", 1, 0, true);
-  sendAT("AT+CSSLCFG=\"authmode\",0,0", "OK", 1, 0, true);
-  sendAT("AT+CSSLCFG=\"cacert\",0,\"gts_root.pem\"", "OK", 1, 0, true);
-  sendAT("AT+CSSLCFG=\"ignorelocaltime\",0,1", "OK", 1, 0, true);
-  sendAT("AT+CSSLCFG=\"ciphersuite\",0,\"?\"", "OK", 1, 0, true);
-  sendAT("AT+CSSLCFG=\"enableSNI\",0,1", "OK", 1, 0, true);
-  Serial.println("Uploading SSL certificate...");
+  sendAT("AT+CSSLCFG=\"sslversion\",0,3");
+  sendAT("AT+CSSLCFG=\"authmode\",0,0");
+  sendAT("AT+CSSLCFG=\"cacert\",0,\"root_ca.pem\"");
+  sendAT("AT+CSSLCFG=\"ignorelocaltime\",0,1");
+  // sendAT("AT+CSSLCFG=\"ciphersuite\",0,\"?\"");
+  sendAT("AT+CSSLCFG=\"enableSNI\",0,1");
+
+  Serial.println("Setting up SSL certificate...");
+  sendAT("AT+CCERTDELE");
+  int certLength = strlen(root_ca);
+  simModule.print("AT+CCERTDOWN=\"gts4.pem\",");
+  simModule.println(certLength);
+  
+  if (simModule.find(">")) {
+    Serial.println("Prompt received, sending certificate...");
+    simModule.print(root_ca);
+    // read back the "OK"
+    while (simModule.available()) {
+      Serial.write(simModule.read());
+    }
+  } else {
+    Serial.println("No prompt received, certificate not sent.");
+  }
+
+  sendAT("AT+CCERTLIST");
+  
 }
+
 
 
 void Sim::init(){
