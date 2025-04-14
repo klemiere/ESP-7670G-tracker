@@ -5,7 +5,7 @@
 Gps::Gps(Sim& sim) : sim(sim) {
 }
 
-String Gps::sendATCommand(String command, unsigned int timeoutInSeconds, int timeoutInSeconds, bool printResponse){
+String Gps::sendATCommand(String command, unsigned int timeoutInSeconds){
   return sim.sendATCommand(command, timeoutInSeconds);
 }
 
