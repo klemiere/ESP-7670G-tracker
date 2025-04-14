@@ -5,18 +5,18 @@
 Gps::Gps(Sim& sim) : sim(sim) {
 }
 
-String Gps::sendATCommand(String command, String expectedResponse, int timeoutInSeconds, bool printResponse){
-  return sim.sendATCommand(command, expectedResponse, timeoutInSeconds, printResponse);
+String Gps::sendATCommand(String command, unsigned int timeoutInSeconds, int timeoutInSeconds, bool printResponse){
+  return sim.sendATCommand(command, timeoutInSeconds);
 }
 
 void Gps::init(){
   Serial.println("Initializing GPS...");
-  sendATCommand("AT+CGNSSPWR=1", "OK"); //power on
-  sendATCommand("AT+CGNSSTST=1", "OK"); //sed data from uart3 to nmea port
-  //sendATCommand("AT+CGPSCOLD", "OK"); //cold start gps
-  sendATCommand("AT+CGNSSIPR=115200", "OK"); // Set baud rate of UART3 and GPS module
+  sendAT("AT+CGNSSPWR=1"); //power on
+  sendAT("AT+CGNSSTST=1"); //sed data from uart3 to nmea port
+  //sendAT("AT+CGPSCOLD"); //cold start gps
+  sendATCommand("AT+CGNSSIPR=115200"); // Set baud rate of UART3 and GPS module
   
-  sendATCommand("AT+CGNSSMODE=1", "OK"); //
+  sendAT("AT+CGNSSMODE=1"); //
   /*1 GPS
     3 GPS + GLONASS
     5 GPS + GALILEO
@@ -25,7 +25,7 @@ void Gps::init(){
     15 GPS + GLONASS + GALILEO + BDS
     The function will take effect immediately. */
     
-  sendATCommand("AT+CGNSSNMEA=1,0,0,0,0,0,0,0,0,0", "OK");
+  sendAT("AT+CGNSSNMEA=1,0,0,0,0,0,0,0,0,0");
   /*nGGA GGA output rate,default is 1
     nGLL GLL output rate,default is 1
     nGSA GSA output rate,default is 1

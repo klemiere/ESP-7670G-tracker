@@ -4,38 +4,31 @@
 Sim::Sim(HardwareSerial& serial, String simPIN, String simPUK) : simModule(serial), simPIN(simPIN), simPUK(simPUK){
 }
 
-String Sim::sendATCommand(String command, String expectedResponse, int timeoutInSeconds, int retryAttempts, bool printResponse) {
+String Sim::sendAT(String command, unsigned int timeoutInSeconds) {
+  unsigned int timeoutInMillis = timeoutInSeconds * 1000;
+  simModule.println(command);
+
   String response = "";
-  unsigned long timeoutInMilliseconds = timeoutInSeconds * 1000;
-  unsigned long startTime;
+  unsigned long timeout = millis() + timeoutInMillis; // 5-second timeout
 
-  for (int i = 0; i <= retryAttempts; i++) {
-    delay(500);
-    simModule.println(command);
-    startTime = millis();
-    response = ""; // Clear response for each attempt
-
-    while (millis() - startTime < timeoutInMilliseconds) {
-      if (simModule.available()) {
-        char c = simModule.read();
-        response += c;
-        if (printResponse) Serial.print(c);
-      }
+  while (millis() < timeout) {
+    while (simModule.available()) {
+      char c = simModule.read();
+      response += c;
+      Serial.print(c);
+      timeout = millis() + 500; // extend timeout on activity
     }
-    if (response.indexOf(expectedResponse) != -1) {
-          Serial.println();
-          return response; // Return if successful
-          }
-    Serial.println("Attempt " + String(i + 1) + " failed.");
   }
 
-  Serial.println("All attempts failed.");
+  Serial.println(); // finish line
   return response;
 }
 
-
 void Sim::checkSim(){
-  String cpin = sendATCommand("AT+CPIN?", "OK", 1, 5);
+  String cpin = "";
+  do {
+    cpin = sendAT("AT+CPIN?", 2);
+  } while (cpin.indexOf("ERROR") != -1);
     
     if (cpin.indexOf("READY") != -1){
       Serial.println("Sim ready, skipping PIN...");
@@ -45,33 +38,44 @@ void Sim::checkSim(){
     } else if (cpin.indexOf("SIM PUK") != -1){
       Serial.println("Entering PUK...");
       sendATCommand("AT+CPIN=" + simPUK, "OK", 1, true);
-    } else {
-      Serial.println("Sim initialization failed, restarting device.");
-      ESP.restart();
     }
 }
 
 void Sim::networkInit(){
   String response = "";
-  sendATCommand("AT+CGDCONT=1, \"IP\", \"free\"", "OK", 1, 5, true); //define pdp context
+  sendAT("AT+CGDCONT=1, \"IP\", \"free\"", 2); //define pdp context
+  
   do {
     Serial.println("Acquiring network...");
-    response = sendATCommand("AT+CREG?", "+CREG:", 20, 1, true); // check if connected to network
+    response = sendAT("AT+CREG?"); // check if connected to network
 } while (response.indexOf("+CREG: 0,1") == -1 && response.indexOf("+CREG: 0,5") == -1);
-  delay(2000);
+
+  /*delay(2000);
   while (simModule.available()) {
-   simModule.read();  // Clear any leftover data in the buffer
-  }
-  sendATCommand("AT+CGACT=1,1", "OK", 1, 0, true);  // Activate PDP context
-  sendATCommand("AT+CGPADDR=1", "OK", 1, 0, true);  // Get assigned IP
+   simModule.read();  //clear any leftover data in the buffer
+  }*/
+  
+  sendAT("AT+CGACT=1,1");  // Activate PDP context
+  sendAT("AT+CGPADDR=1");  // Get assigned IP
 }
+
+void Sim::SSLConfig(){
+  sendAT("AT+CSSLCFG=\"sslversion\",0,3", "OK", 1, 0, true);
+  sendAT("AT+CSSLCFG=\"authmode\",0,0", "OK", 1, 0, true);
+  sendAT("AT+CSSLCFG=\"cacert\",0,\"gts_root.pem\"", "OK", 1, 0, true);
+  sendAT("AT+CSSLCFG=\"ignorelocaltime\",0,1", "OK", 1, 0, true);
+  sendAT("AT+CSSLCFG=\"ciphersuite\",0,\"?\"", "OK", 1, 0, true);
+  sendAT("AT+CSSLCFG=\"enableSNI\",0,1", "OK", 1, 0, true);
+  Serial.println("Uploading SSL certificate...");
+}
+
 
 void Sim::init(){
   Serial.println("Checking sim status...");
   checkSim();
   Serial.println("Initializing 4G network...");
   networkInit();
-  sendATCommand("AT+HTTPTERM", "OK"); /*send termination signal in case http is still initialized,
-  this will print "Attempts failed" if it wasn't initialized but who cares*/
   Serial.println("Network initialized!");
+  Serial.println("Configuring SSL");
+  SSLConfig();
 }

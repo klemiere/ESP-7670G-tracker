@@ -4,44 +4,26 @@
 
 #define RX_PIN 17 //SIM7670 TX
 #define TX_PIN 18 //SIM7670 RX
+#define DTR_PIN 5 //SIM7670 DTR
 #define SIM_PIN "1234"
 #define SIM_PUK "30755571"
 
 HardwareSerial sim7670(1);  // UART1
 Sim sim(sim7670, SIM_PIN, SIM_PUK);
 Gps gps(sim);
+
 void setup() {
-    
-    Serial.begin(115200);
-    sim7670.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
-    delay(2000);
-    Serial.println("Initializing sim module");
-    sim.init();
+  Serial.begin(115200);
+  sim7670.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
+  delay(2000);
+  Serial.println("Initializing sim module");
+  sim.init();
+  delay(2000);
+  //sim.sendATCommand("", "OK", 1, 0, true);
+  sim.sendAT("HTTPINIT");
+  
 
-    
-    /*Serial.println("Checking sim...");
-    checkSim(&sim7670);
 
-    sendATCommand(&sim7670, "AT+CGDCONT=1, \"IP\", \"free\"", "OK", 1, 1);
-    sendATCommand(&sim7670, "AT+CGPADDR=?", "OK", 1, 1);
-    sendATCommand(&sim7670, "AT+CREG?", "+CREG: 0,3", 10, 1);
-    sendATCommand(&sim7670, "AT+COPS?", "OK", 1, 1);
-    sendATCommand(&sim7670, "AT+CPING=\"www.google.com\", 1, 1", "OK", 1, 1); // ping to check if we have internet
-    if (sendATCommand(&sim7670, "AT+HTTPINIT", "OK", 1, 1).indexOf("OK") == -1) {
-      if (sendATCommand(&sim7670, "AT+HTTPTERM", "OK", 1, 1).indexOf("OK") == 1){
-        if (sendATCommand(&sim7670, "AT+HTTPINIT", "OK", 1, 1).indexOf("OK") == -1) ESP.restart(); // attempt to start the HTTP service, if it fails restart the device
-      } else{
-        ESP.restart();
-      }
-    }
-    
-    Serial.println("HTTP service started!");
-
-    sendATCommand(&sim7670, "AT+HTTPPARA=\"URL\",\"https://esp-7670g-tracker.onrender.com/test_route\"", "OK", 1, 1);
-    String httpResponse = sendATCommandHTTP(&sim7670, "AT+HTTPACTION=0", "+HTTPACTION:", 60000, 1);
-    Serial.println("Final Response: " + httpResponse);
-    String responseSize = sendATCommandHTTP(&sim7670, "AT+HTTPREAD?", "+HTTPREAD:", 5000, 1);
-    String httpData = sendATCommandHTTP(&sim7670, "AT+HTTPREAD=0,1024", "+HTTPREAD:", 60000, 1);*/
     
     /*Serial.println("Initializing GPS...");
     sendATCommand(&sim7670, "AT+CGNSSPWR=1", "OK"); // power on
