@@ -6,7 +6,6 @@
 class Sim {
   public:
     Sim(HardwareSerial& serial, String simPIN, String simPUK);
-    String sendATCommand(String command, String expectedResponse, int timeout = 1, int retryAttempts = 0, bool printResponse = false);
     String sendAT(String command, unsigned int timeoutInSeconds = 2);
     void init();
   private:

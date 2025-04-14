@@ -6,7 +6,7 @@
 class Gps {
   public:
     Gps(Sim& sim);
-    String sendAT(String command, unsigned int = timeoutInSeconds);
+    String sendAT(String command, unsigned int timeoutInSeconds = 1);
     void getCoordinates();
     void init();
   private:
