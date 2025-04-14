@@ -5,8 +5,8 @@
 Gps::Gps(Sim& sim) : sim(sim) {
 }
 
-String Gps::sendATCommand(String command, unsigned int timeoutInSeconds){
-  return sim.sendATCommand(command, timeoutInSeconds);
+String Gps::sendAT(String command, unsigned int timeoutInSeconds){
+  return sim.sendAT(command, timeoutInSeconds);
 }
 
 void Gps::init(){
@@ -14,7 +14,7 @@ void Gps::init(){
   sendAT("AT+CGNSSPWR=1"); //power on
   sendAT("AT+CGNSSTST=1"); //sed data from uart3 to nmea port
   //sendAT("AT+CGPSCOLD"); //cold start gps
-  sendATCommand("AT+CGNSSIPR=115200"); // Set baud rate of UART3 and GPS module
+  sendAT("AT+CGNSSIPR=115200"); // Set baud rate of UART3 and GPS module
   
   sendAT("AT+CGNSSMODE=1"); //
   /*1 GPS
