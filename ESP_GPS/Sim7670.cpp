@@ -93,24 +93,6 @@ int getGnssRawData(String gnssResponse, String *gnssArray){
   return 0;
 }
 
-String getLatitude(String gnssArray[]){
-  if (gnssArray[5] == "") return "Invalid Latitude";
-  return gnssArray[5] + " " + gnssArray[6];
-}
-
-String getLongitude(String gnssArray[]){
-  if (gnssArray[7] == "") return "Invalid Longitude";
-  return gnssArray[7] + " " + gnssArray[8];
-}
-
-String getDate(){
-  //TODO: Implement
-}
-
-String getTime(){
-  //TODO: Implement
-}
-
 void sendData(){
   //TODO: Implement
 }

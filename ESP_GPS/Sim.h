@@ -8,15 +8,13 @@ class Sim {
     Sim(HardwareSerial& serial, String simPIN, String simPUK);
     String sendAT(String command, unsigned int timeoutInSeconds = 2);
     void init();
+    String httpRequest(String method = "get", String url = "http://51.178.25.133:8000/test_route", int timeOutInSeconds = 2);
   private:
     HardwareSerial& simModule;
-    const char* certificatePEM;
     String simPIN;
     String simPUK;
     void checkSim();
     void networkInit();
-    void SSLConfig();
-    bool uploadCertificate(const String& filename, const char* certificate);
 };
 
 #endif

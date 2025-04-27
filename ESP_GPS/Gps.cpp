@@ -10,10 +10,9 @@ String Gps::sendAT(String command, unsigned int timeoutInSeconds){
 }
 
 void Gps::init(){
-  Serial.println("Initializing GPS...");
   sendAT("AT+CGNSSPWR=1"); //power on
   sendAT("AT+CGNSSTST=1"); //sed data from uart3 to nmea port
-  //sendAT("AT+CGPSCOLD"); //cold start gps
+  sendAT("AT+CGPSCOLD"); //cold start gps
   sendAT("AT+CGNSSIPR=115200"); // Set baud rate of UART3 and GPS module
   
   sendAT("AT+CGNSSMODE=1"); //
@@ -25,7 +24,7 @@ void Gps::init(){
     15 GPS + GLONASS + GALILEO + BDS
     The function will take effect immediately. */
     
-  sendAT("AT+CGNSSNMEA=1,0,0,0,0,0,0,0,0,0");
+  sendAT("AT+CGNSSNMEA=1,1,1,1,1,1,1,0,0,0");
   /*nGGA GGA output rate,default is 1
     nGLL GLL output rate,default is 1
     nGSA GSA output rate,default is 1
@@ -37,24 +36,29 @@ void Gps::init(){
     nGST GST output rate,default is 0
     nGNS GNS output rate,default is 0
     The function will take effect immediately. */
-
-   Serial.println("GPS Initialized");
 }
 
-/*int getGnssRawData(String gnssResponse, String *gnssArray){
-  
+void Gps::getGnssRawData(String* gnssArray){
+  String rawData = "";
+
+  String gnssResponse = "";
+  do{
+    gnssResponse = sendAT("AT+CGPSINFO");
+    Serial.println("gnss data: " + gnssResponse);
+    delay(5000);
+  } while (gnssResponse.indexOf("N") != -1);
+
   // Check if the reponse contains GNSS data
-  if (gnssResponse.indexOf("+CGNSSINFO:") > 0) {
-        Serial.println("Received GNSS info:");
-        Serial.println(gnssResponse); // Print for debugging
+  if (gnssResponse.indexOf("+CGPSINFO:") > 0) {
+        Serial.println("Received GNSS info: " + gnssResponse); // Print for debugging
   } 
   else {
         Serial.println("No GNSS data");
-        return 1;
+        return;
   }
         
   // Extract the raw GNSS data part from the response
-  int start = gnssResponse.indexOf("+CGNSSINFO:") + 11;
+  int start = gnssResponse.indexOf("+CGPSINFO:") + 11;
   String gnssData = gnssResponse.substring(start);
   
   int index = 0;
@@ -72,7 +76,24 @@ void Gps::init(){
   }
   // Store the last token (after the last comma)
   gnssArray[index] = token;
-  
-  return 0;
 }
-*/
+
+String getLatitude(String gnssArray[]){
+  if (gnssArray[5] == "") return "Invalid Latitude";
+  return gnssArray[5] + " " + gnssArray[6];
+}
+
+String getLongitude(String gnssArray[]){
+  if (gnssArray[7] == "") return "Invalid Longitude";
+  return gnssArray[7] + " " + gnssArray[8];
+}
+
+String Gps::getDateTime(){
+  String response = sendAT("AT+CCLK?");
+  int start = response.indexOf("\"") + 1;
+  int end = response.indexOf("\"", start);
+  String timeData = response.substring(start, end);
+
+  return timeData;
+  
+}

@@ -1,6 +1,7 @@
 #include <Sim.h>
 #include <Arduino.h>
-#include <ssl_web.h>
+#include <algorithm> // For std::transform
+#include <cctype>    // For ::tolower
 
 Sim::Sim(HardwareSerial& serial, String simPIN, String simPUK) : simModule(serial), simPIN(simPIN), simPUK(simPUK){
 }
@@ -11,38 +12,25 @@ String Sim::sendAT(String command, unsigned int timeoutInSeconds) {
   simModule.println(command);
 
   String response = "";
-  unsigned long timeout = millis() + timeoutInMillis; // 5-second timeout
+  unsigned long startMillis = millis(); // Start time for timeout
 
-  while (millis() < timeout) {
+  while (millis() - startMillis < timeoutInMillis) {
     while (simModule.available()) {
       char c = simModule.read();
       response += c;
       Serial.print(c);
-      timeout = millis() + 500; // extend timeout on activity
     }
   }
 
-  Serial.println(); // finish line
+  Serial.println(); // Finish line
   return response;
 }
-
-
 
 void Sim::checkSim(){
   String cpin = "";
   do {
     cpin = sendAT("AT+CPIN?", 2);
   } while (cpin.indexOf("ERROR") != -1);
-    
-    if (cpin.indexOf("READY") != -1){
-      Serial.println("Sim ready, skipping PIN...");
-    } else if (cpin.indexOf("SIM PIN") != -1) {
-      Serial.println("Entering PIN...");
-      sendAT("AT+CPIN=" + simPIN);
-    } else if (cpin.indexOf("SIM PUK") != -1){
-      Serial.println("Entering PUK...");
-      sendAT("AT+CPIN=" + simPUK);
-    }
 }
 
 
@@ -65,45 +53,62 @@ void Sim::networkInit(){
   sendAT("AT+CGPADDR=1");  // Get assigned IP
 }
 
-
-
-void Sim::SSLConfig(){
-  sendAT("AT+CSSLCFG=\"sslversion\",0,3");
-  sendAT("AT+CSSLCFG=\"authmode\",0,0");
-  sendAT("AT+CSSLCFG=\"cacert\",0,\"root_ca.pem\"");
-  sendAT("AT+CSSLCFG=\"ignorelocaltime\",0,1");
-  // sendAT("AT+CSSLCFG=\"ciphersuite\",0,\"?\"");
-  sendAT("AT+CSSLCFG=\"enableSNI\",0,1");
-
-  Serial.println("Setting up SSL certificate...");
-  sendAT("AT+CCERTDELE");
-  int certLength = strlen(root_ca);
-  simModule.print("AT+CCERTDOWN=\"gts4.pem\",");
-  simModule.println(certLength);
-  
-  if (simModule.find(">")) {
-    Serial.println("Prompt received, sending certificate...");
-    simModule.print(root_ca);
-    // read back the "OK"
-    while (simModule.available()) {
-      Serial.write(simModule.read());
-    }
-  } else {
-    Serial.println("No prompt received, certificate not sent.");
-  }
-
-  sendAT("AT+CCERTLIST");
-  
-}
-
-
-
 void Sim::init(){
   Serial.println("Checking sim status...");
   checkSim();
   Serial.println("Initializing 4G network...");
   networkInit();
   Serial.println("Network initialized!");
-  Serial.println("Configuring SSL");
-  SSLConfig();
+}
+
+String Sim::httpRequest(String method, String url, int timeOutInSeconds){
+  String responseData = "";
+  for (char &c : method) {
+        c = std::tolower(static_cast<unsigned char>(c));
+    }
+
+  if (method == "get") method = "0";
+  else if (method == "post") method = "1";
+  else if (method == "head") method = "2";
+  else if (method == "delete") method = "3";
+  else if (method == "put") method = "4";
+  else {
+    Serial.println("Invalid http method");
+    return "Invalid http method";
+  }
+
+  sendAT("AT+HTTPINIT");
+  sendAT("AT+HTTPPARA=\"URL\", \"" + url + "\"");
+  sendAT("AT+HTTPACTION=" + method, timeOutInSeconds);
+
+  String responseLength = sendAT("AT+HTTPREAD?");
+  int commaIndex = responseLength.indexOf(",");
+  if (commaIndex != -1) {
+    // Extract the number after the comma and before any other character
+    String lengthStr = responseLength.substring(commaIndex + 1);
+    int length = lengthStr.toInt();
+
+    // Debug: Check the parsed length
+    // Serial.print("Parsed length: " + length);
+
+    if (length > 0) {
+      String dataResponse = sendAT("AT+HTTPREAD=0," + String(length));
+
+      // Extract the actual response data
+      int dataStart = dataResponse.indexOf("\"") + 1;
+      int dataEnd = dataResponse.indexOf("\"", dataStart);
+
+      if (dataStart != -1 && dataEnd != -1) {
+          responseData = dataResponse.substring(dataStart, dataEnd);  // Extract and trim the data
+          responseData.trim();
+      } else {
+          return "Failed to parse response data";
+      }
+
+    }
+  }
+
+  sendAT("AT+HTTPTERM");
+  return responseData;
+
 }

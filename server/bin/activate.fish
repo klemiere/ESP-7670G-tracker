@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/kevin/Documents/school/Projet/server
+set -gx VIRTUAL_ENV /home/kevin/Arduino/ESP-7670G-tracker/server
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

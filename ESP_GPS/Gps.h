@@ -9,6 +9,10 @@ class Gps {
     String sendAT(String command, unsigned int timeoutInSeconds = 1);
     void getCoordinates();
     void init();
+    void getGnssRawData(String* gnssArray);
+    String getLatitude(String gnssArray[]);
+    String getLongitude(String gnssArray[]);
+    String getDateTime();
   private:
     Sim& sim;
 };
