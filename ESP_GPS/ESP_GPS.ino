@@ -5,11 +5,9 @@
 #define RX_PIN 17 //SIM7670 TX
 #define TX_PIN 18 //SIM7670 RX
 #define DTR_PIN 5 //SIM7670 DTR
-#define SIM_PIN "1234"
-#define SIM_PUK "30755571"
 
 HardwareSerial sim7670(1);  // UART1
-Sim sim(sim7670, SIM_PIN, SIM_PUK);
+Sim sim(sim7670);
 Gps gps(sim);
 
 
@@ -39,5 +37,12 @@ void setup() {
 
 void loop() {
   // sim.httpRequest("get", "http://51.178.25.133:8000/test_route");
-  gps.getDateTime();
+  String gnssArray[25];
+  gps.getGnssRawData(gnssArray);
+  String latitude = gps.getLatitude(gnssArray);
+  String longitude = gps.getLongitude(gnssArray);
+  String dateTime = sim.getDateTime();
+
+  String json = sim.serialize(latitude, longitude, dateTime);
+  Serial.println(json);
 }
