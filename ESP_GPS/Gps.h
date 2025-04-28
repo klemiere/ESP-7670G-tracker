@@ -12,7 +12,6 @@ class Gps {
     void getGnssRawData(String* gnssArray);
     String getLatitude(String gnssArray[]);
     String getLongitude(String gnssArray[]);
-    String getDateTime();
   private:
     Sim& sim;
 };

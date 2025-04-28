@@ -24,7 +24,7 @@ void Gps::init(){
     15 GPS + GLONASS + GALILEO + BDS
     The function will take effect immediately. */
     
-  sendAT("AT+CGNSSNMEA=1,1,1,1,1,1,1,0,0,0");
+  sendAT("AT+CGNSSNMEA=1,0,0,0,0,0,0,0,0,0");
   /*nGGA GGA output rate,default is 1
     nGLL GLL output rate,default is 1
     nGSA GSA output rate,default is 1
@@ -44,9 +44,8 @@ void Gps::getGnssRawData(String* gnssArray){
   String gnssResponse = "";
   do{
     gnssResponse = sendAT("AT+CGPSINFO");
-    Serial.println("gnss data: " + gnssResponse);
     delay(5000);
-  } while (gnssResponse.indexOf("N") != -1);
+  } while (gnssResponse.indexOf(": ,") != -1);
 
   // Check if the reponse contains GNSS data
   if (gnssResponse.indexOf("+CGPSINFO:") > 0) {
@@ -78,22 +77,26 @@ void Gps::getGnssRawData(String* gnssArray){
   gnssArray[index] = token;
 }
 
-String getLatitude(String gnssArray[]){
-  if (gnssArray[5] == "") return "Invalid Latitude";
-  return gnssArray[5] + " " + gnssArray[6];
+float convertToDecimalDegrees(String nmeaCoord) {
+  int pointIndex = nmeaCoord.indexOf('.');
+  int degreesLength = pointIndex == 4 ? 2 : 3;  // 2 digits for latitude, 3 digits for longitude
+  float degrees = nmeaCoord.substring(0, degreesLength).toFloat();
+  float minutes = nmeaCoord.substring(degreesLength).toFloat();
+  return degrees + (minutes / 60.0);
 }
 
-String getLongitude(String gnssArray[]){
-  if (gnssArray[7] == "") return "Invalid Longitude";
-  return gnssArray[7] + " " + gnssArray[8];
+String Gps::getLatitude(String gnssArray[]){
+  if (gnssArray[0] == "") return "Invalid Latitude";
+  char buffer[20];
+  sprintf(buffer, "%.6f", convertToDecimalDegrees(gnssArray[0]));
+  return String(buffer) + " " + gnssArray[1];
 }
 
-String Gps::getDateTime(){
-  String response = sendAT("AT+CCLK?");
-  int start = response.indexOf("\"") + 1;
-  int end = response.indexOf("\"", start);
-  String timeData = response.substring(start, end);
-
-  return timeData;
-  
+String Gps::getLongitude(String gnssArray[]){
+  if (gnssArray[2] == "") return "Invalid Longitude";
+  char buffer[20];
+  sprintf(buffer, "%.6f", convertToDecimalDegrees(gnssArray[2]));
+  return String(buffer) + " " + gnssArray[3];
 }
+
+
