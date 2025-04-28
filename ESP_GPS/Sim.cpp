@@ -3,7 +3,7 @@
 #include <algorithm> // For std::transform
 #include <cctype>    // For ::tolower
 
-Sim::Sim(HardwareSerial& serial, String simPIN, String simPUK) : simModule(serial), simPIN(simPIN), simPUK(simPUK){
+Sim::Sim(HardwareSerial& serial) : simModule(serial){
 }
 
 
@@ -111,4 +111,27 @@ String Sim::httpRequest(String method, String url, int timeOutInSeconds){
   sendAT("AT+HTTPTERM");
   return responseData;
 
+}
+
+String Sim::getDateTime(){
+  String response = sendAT("AT+CCLK?");
+  int start = response.indexOf("\"") + 1;
+  int end = response.indexOf("\"", start);
+  String timeData = response.substring(start, end);
+
+  return timeData;
+  
+}
+
+String Sim::serialize(String latitude, String longitude, String dateTime){
+  String jsonPayload = "{";
+  jsonPayload += "\"latitude\":\"" + latitude + "\",";
+  jsonPayload += "\"longitude\":\"" + longitude + "\",";
+  jsonPayload += "\"datetime\":\"" + dateTime + "\"";
+  jsonPayload += "}";
+  return jsonPayload;
+}
+
+int Sim::sendData(String payload){
+  
 }
