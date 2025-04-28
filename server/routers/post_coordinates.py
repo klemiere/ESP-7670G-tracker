@@ -6,9 +6,9 @@ router = APIRouter()
 class Coordinates(BaseModel):
     latitude: str
     longitude: str
-    time: str
-    date: str
+    datetime: str
 
 @router.post("/post_coordinates")
-async def create_post(post: Coordinates):
-    return Coordinates
+async def create_post(payload: Coordinates):
+    print(payload)
+    return payload
