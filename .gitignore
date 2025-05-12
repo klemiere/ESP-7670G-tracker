@@ -1,3 +1,9 @@
 .vscode/
 __pycache__/
-server/test.py
+server/__pycache__/
+server/bin/
+server/include/
+server/lib/
+server/lib64/
+server.pyvenv.cfg
+server/secrets.json
