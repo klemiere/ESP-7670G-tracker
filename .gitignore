@@ -1,9 +1,4 @@
 .vscode/
 __pycache__/
-server/__pycache__/
-server/bin/
-server/include/
-server/lib/
-server/lib64/
-server.pyvenv.cfg
+server/venv*/
 server/secrets.json
