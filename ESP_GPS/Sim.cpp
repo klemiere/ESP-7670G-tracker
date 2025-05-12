@@ -61,26 +61,7 @@ void Sim::init(){
   Serial.println("Network initialized!");
 }
 
-String Sim::httpRequest(String method, String url, int timeOutInSeconds){
-  String responseData = "";
-  for (char &c : method) {
-        c = std::tolower(static_cast<unsigned char>(c));
-    }
-
-  if (method == "get") method = "0";
-  else if (method == "post") method = "1";
-  else if (method == "head") method = "2";
-  else if (method == "delete") method = "3";
-  else if (method == "put") method = "4";
-  else {
-    Serial.println("Invalid http method");
-    return "Invalid http method";
-  }
-
-  sendAT("AT+HTTPINIT");
-  sendAT("AT+HTTPPARA=\"URL\", \"" + url + "\"");
-  sendAT("AT+HTTPACTION=" + method, timeOutInSeconds);
-
+String Sim::httpReadResponse(){
   String responseLength = sendAT("AT+HTTPREAD?");
   int commaIndex = responseLength.indexOf(",");
   if (commaIndex != -1) {
@@ -99,18 +80,71 @@ String Sim::httpRequest(String method, String url, int timeOutInSeconds){
       int dataEnd = dataResponse.indexOf("\"", dataStart);
 
       if (dataStart != -1 && dataEnd != -1) {
-          responseData = dataResponse.substring(dataStart, dataEnd);  // Extract and trim the data
+          String responseData = dataResponse.substring(dataStart, dataEnd);  // Extract and trim the data
           responseData.trim();
+          return responseData;
       } else {
           return "Failed to parse response data";
       }
 
     }
   }
+  return "No response";
+}
+
+bool Sim::waitForDownloadPrompt(unsigned long timeoutMs) {
+  unsigned long startTime = millis();
+  String response = "";
+
+  while (millis() - startTime < timeoutMs) {
+    while (simModule.available()) {
+      char c = simModule.read();
+      response += c;
+
+      if (response.indexOf("DOWNLOAD") != -1) {
+        return true;
+      }
+    }
+  }
+
+  return false; // Timeout
+}
+
+String Sim::httpPostRequest(String url, String payload, int timeOutInSeconds){
+  int payloadLength = payload.length();
+  String responseData = "";
+
+  sendAT("AT+HTTPINIT");
+  sendAT("AT+HTTPPARA=\"URL\", \"" + url + "\"");
+  sendAT("AT+HTTPPARA=\"CONTENT\", \"application/json\"");
+  simModule.print("AT+HTTPDATA=");
+  simModule.print(payloadLength);
+  simModule.println(",10000");
+
+  if (waitForDownloadPrompt()) {
+    simModule.print(payload);  // Send your JSON string
+  } else {
+    Serial.println("Timeout waiting for DOWNLOAD prompt");
+  }
+
+  delay(100); // may be useless
+
+  sendAT("AT+HTTPACTION=1", timeOutInSeconds);
+  String response = httpReadResponse();
+
+  return response;
+  //sendAT("AT+HTTPACTION=" + method, timeOutInSeconds);
+}
+
+String Sim::httpGetRequest(String url, int timeOutInSeconds){
+  sendAT("AT+HTTPINIT");
+  sendAT("AT+HTTPPARA=\"URL\", \"" + url + "\"");
+  sendAT("AT+HTTPACTION=0", timeOutInSeconds);
+
+  String responseData = httpReadResponse();
 
   sendAT("AT+HTTPTERM");
   return responseData;
-
 }
 
 String Sim::getDateTime(){
@@ -132,6 +166,7 @@ String Sim::serialize(String latitude, String longitude, String dateTime){
   return jsonPayload;
 }
 
-int Sim::sendData(String payload){
-  
+int Sim::sendData(String url, String payload){
+  String response = httpPostRequest(url, payload);
+  return 0;
 }

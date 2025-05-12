@@ -1,4 +1,3 @@
-#include "Sim7670.h"
 #include "Sim.h"
 #include "Gps.h"
 
@@ -36,7 +35,6 @@ void setup() {
 }
 
 void loop() {
-  // sim.httpRequest("get", "http://51.178.25.133:8000/test_route");
   String gnssArray[25];
   gps.getGnssRawData(gnssArray);
   String latitude = gps.getLatitude(gnssArray);
@@ -44,5 +42,5 @@ void loop() {
   String dateTime = sim.getDateTime();
 
   String json = sim.serialize(latitude, longitude, dateTime);
-  Serial.println(json);
+  sim.sendData("http://51.178.25.133:8000/post_coordinates", json);
 }
