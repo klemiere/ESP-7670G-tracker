@@ -6,3 +6,7 @@ class Coordinates(BaseModel):
     latitude: Decimal
     longitude: Decimal
     timestamp: str
+
+class User_schema(BaseModel):
+    username: str
+    password: str
