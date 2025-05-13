@@ -1,13 +1,17 @@
 from models import Position
 from database import SessionLocal
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 
 router = APIRouter()
 
-@router.get("/get_coordinates")
-async def get_positions(tracker_id: int, limit: int = 1):
+@router.get("/get_coordinates_single_tracker")
+async def get_positions_single_tracker(
+    tracker_id: int = Query(..., title="tracker_id",
+                            description="ID of the tracker to query for."), 
+    limit: int = Query(1, title="limit",
+                       description="Amount of records to return.")):
     
     session = SessionLocal()
 

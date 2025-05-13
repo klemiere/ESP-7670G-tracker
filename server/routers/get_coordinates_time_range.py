@@ -1,14 +1,19 @@
 from datetime import datetime
 from models import Position
 from database import SessionLocal
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 
 router = APIRouter()
 
-@router.get("/get_coordinates")
-async def get_positions(tracker_id: int, start_time: str, end_time: str):
+@router.get("/get_coordinates_time_range")
+async def get_positions_time_range(tracker_id: int = Query(..., title="tracker_id",
+                                                           description="ID of the tracker to query."), 
+                                    start_time: str = Query(..., title="start_time",
+                                                            description="Oldest time: YYYY-MM-DD HH:MM:SS"),
+                                    end_time: str = Query(..., title="end_time",
+                                                          description="Latest time: YYYY-MM-DD HH:MM:SS")):
     
     session = SessionLocal()
 
