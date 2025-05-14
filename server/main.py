@@ -9,6 +9,7 @@ from routers.get_vehicles import router as get_vehicles_routers
 from routers.post_coordinates import router as post_coordinates_router
 from routers.post_add_user import router as post_add_user_router
 from routers.post_add_tracker import router as post_add_tracker_router
+from routers.post_add_vehicle_to_tracker import router as post_add_vehicle_to_tracker_router
 
 server = FastAPI()
 
@@ -25,3 +26,4 @@ server.include_router(get_vehicles_routers)
 server.include_router(post_coordinates_router)
 server.include_router(post_add_user_router)
 server.include_router(post_add_tracker_router)
+server.include_router(post_add_vehicle_to_tracker_router)
