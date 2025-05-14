@@ -20,9 +20,13 @@ async def get_user(
                                            ).first()
 
         if not user:
-            return {"message": "Incorrect password or user not found."}
+            raise HTTPException(status_code=404, detail="Invalid credentials")
         
+        # Managing auth (or most of this API really) is NOT part of my tasks so I'm not making it any more complicated than this
         return {"message": "OK"}
+
+    except HTTPException as e:
+        raise e
 
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
