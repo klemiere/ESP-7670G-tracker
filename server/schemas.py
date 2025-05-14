@@ -1,7 +1,8 @@
-from pydantic import BaseModel
-from typing import Optional
-from decimal import Decimal
 from models import TrackerTypeEnum
+from pydantic import BaseModel, field_serializer
+from typing import Optional
+from datetime import datetime
+from decimal import Decimal
 
 class CoordinatesSchema(BaseModel):
     tracker_identifier: str
@@ -16,6 +17,22 @@ class UserSchema(BaseModel):
 class TrackerSchema(BaseModel):
     tracker_identifier: str
     tracker_type: TrackerTypeEnum
+
+class CoordinatesResponse(BaseModel):
+    tracker_id: int
+    position_id: int
+    position_timestamp: datetime
+    position_lat: Decimal
+    position_long: Decimal
+
+    model_config = {
+        "from_attributes": True
+    }
+
+    #Remove the T from the datetime object for consistency
+    @field_serializer("position_timestamp")
+    def serialize_timestamp(self, dt: datetime, _info):
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 class TrackerResponse(BaseModel):
     tracker_id: int
