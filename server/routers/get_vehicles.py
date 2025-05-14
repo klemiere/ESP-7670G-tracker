@@ -1,12 +1,14 @@
 from models import Vehicles
+from schemas import VehicleResponse
 from database import SessionLocal
 from fastapi import APIRouter, HTTPException
+from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 
 
 router = APIRouter()
 
-@router.get("/get_vehicles")
+@router.get("/get_vehicles", response_model=List[VehicleResponse])
 async def get_vehicles():
     
     session = SessionLocal()
