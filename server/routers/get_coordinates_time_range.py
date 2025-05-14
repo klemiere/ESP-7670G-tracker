@@ -1,5 +1,5 @@
 from datetime import datetime
-from models import Position
+from models import Positions
 from database import SessionLocal
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -23,11 +23,11 @@ async def get_positions_time_range(tracker_id: int = Query(..., title="tracker_i
         end_dt = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
 
         # Query the positions between the timestamps
-        positions = session.query(Position).filter(
-            Position.tracker_id == tracker_id,
-            Position.position_timestamp >= start_dt,
-            Position.position_timestamp <= end_dt
-        ).order_by(Position.position_timestamp.desc()).all()
+        positions = session.query(Positions).filter(
+            Positions.tracker_id == tracker_id,
+            Positions.position_timestamp >= start_dt,
+            Positions.position_timestamp <= end_dt
+        ).order_by(Positions.position_timestamp.desc()).all()
 
         if not positions:
             return {"message": "No position found in the given time range."}

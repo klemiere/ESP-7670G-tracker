@@ -1,4 +1,4 @@
-from models import Position
+from models import Positions
 from database import SessionLocal
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,7 +17,7 @@ async def get_positions_single_tracker(
 
     try:
         # Query positions, sort by timestamp descending, retrieve a "limit" amount of datapoints and put them in a "position" list
-        positions = session.query(Position).filter(Position.tracker_id == tracker_id).order_by(Position.position_timestamp.desc()).limit(limit).all()
+        positions = session.query(Positions).filter(Positions.tracker_id == tracker_id).order_by(Positions.position_timestamp.desc()).limit(limit).all()
 
         if not positions:
             return {"message": "No position found for the given tracker ID."}

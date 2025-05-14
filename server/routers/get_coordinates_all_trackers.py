@@ -1,4 +1,4 @@
-from models import Position
+from models import Positions
 from database import SessionLocal
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy import func, and_
@@ -17,18 +17,18 @@ async def get_positions_all_trackers(limit: int = Query(1, title="limit",
     try:
         # Add a window function for row numbering
         row_number_column = func.row_number().over(
-            partition_by=Position.tracker_id,
-            order_by=Position.position_timestamp.desc()
+            partition_by=Positions.tracker_id,
+            order_by=Positions.position_timestamp.desc()
         ).label("row_number")
 
         # Create a subquery with the row number
         subquery = (
-            session.query(Position, row_number_column)
+            session.query(Positions, row_number_column)
             .subquery()
         )
 
         # Alias the subquery so we can refer to Position columns cleanly
-        SubPosition = aliased(Position, subquery)
+        SubPosition = aliased(Positions, subquery)
 
         # Query only rows where row_number <= limit
         results = (
