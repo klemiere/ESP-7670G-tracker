@@ -39,7 +39,13 @@ async def get_positions_all_trackers(limit: int = Query(1, title="limit",
             .all()
         )
 
-        return results if results else {"message": "No positions found."}
+        if not results:
+            raise HTTPException(status_code=404, detail="No positions found.")
+        
+        return results
+    
+    except HTTPException as e:
+        raise
 
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
