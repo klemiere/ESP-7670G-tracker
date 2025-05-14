@@ -1,4 +1,4 @@
-from models import Positions
+from models import Positions, Trackers
 from schemas import CoordinatesSchema
 from database import SessionLocal
 from fastapi import APIRouter, HTTPException
@@ -12,8 +12,10 @@ async def post_request(payload: CoordinatesSchema):
     
     session = SessionLocal()
 
+    tracker = session.query(Trackers).filter(Trackers.tracker_identifier == payload.tracker_identifier).first()
+    
     position_data = Positions(
-        tracker_identifier=payload.tracker_identifier,
+        tracker_id = tracker.tracker_id,
         position_timestamp = payload.timestamp,
         position_lat = payload.latitude,
         position_long = payload.longitude
