@@ -1,5 +1,5 @@
 from models import Users
-from schemas import User_schema
+from schemas import UserSchema
 from database import SessionLocal
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 router = APIRouter()
 
 @router.post("/post_new_user")
-async def post_new_user(payload: User_schema):
+async def post_new_user(payload: UserSchema):
     
     session = SessionLocal()
 
