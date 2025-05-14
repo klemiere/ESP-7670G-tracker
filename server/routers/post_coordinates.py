@@ -1,4 +1,4 @@
-from models import Position
+from models import Positions
 from schemas import Coordinates
 from database import SessionLocal
 from fastapi import APIRouter, HTTPException
@@ -12,7 +12,7 @@ async def post_request(payload: Coordinates):
     
     session = SessionLocal()
 
-    position_data = Position(
+    position_data = Positions(
         position_timestamp = payload.timestamp,
         position_lat = payload.latitude,
         position_long = payload.longitude,
