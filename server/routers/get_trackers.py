@@ -1,12 +1,14 @@
 from models import Trackers
+from schemas import TrackerResponse
 from database import SessionLocal
 from fastapi import APIRouter, Query, HTTPException
+from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 
 
 router = APIRouter()
 
-@router.get("/get_trackers")
+@router.get("/get_trackers", response_model=List[TrackerResponse])
 async def get_trackers(
     tracker_id: int = Query(0, title="Tracker ID")):
     
