@@ -1,14 +1,16 @@
+from schemas import CoordinatesResponse
 from models import Positions
 from database import SessionLocal
 from fastapi import APIRouter, Query, HTTPException
-from sqlalchemy import func, and_
+from typing import List
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import aliased
 
 
 router = APIRouter()
 
-@router.get("/get_coordinates_all_trackers")
+@router.get("/get_coordinates_all_trackers", response_model=List[CoordinatesResponse])
 async def get_positions_all_trackers(limit: int = Query(1, title="limit",
                        description="Amount of records to return.")):
     
