@@ -1,4 +1,4 @@
-from models import Trackers, Vehicles
+from models import Trackers
 from schemas import TrackerSchema
 from database import SessionLocal
 from fastapi import APIRouter, HTTPException
@@ -13,7 +13,7 @@ async def post_add_tracker(payload: TrackerSchema):
     session = SessionLocal()
 
     tracker_data = Trackers(
-        tracker_id = payload.tracker_id,
+        tracker_identifier = payload.tracker_identifier,
         tracker_type = payload.tracker_type,
         tracker_on_site = True,
         tracker_battery_low = False
