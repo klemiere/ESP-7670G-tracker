@@ -13,10 +13,10 @@ async def post_request(payload: Coordinates):
     session = SessionLocal()
 
     position_data = Positions(
+        tracker_identifier=payload.tracker_identifier,
         position_timestamp = payload.timestamp,
         position_lat = payload.latitude,
-        position_long = payload.longitude,
-        tracker_id=payload.tracker_id
+        position_long = payload.longitude
     )
 
     try:
