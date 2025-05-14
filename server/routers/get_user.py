@@ -15,8 +15,8 @@ async def get_user(
 
     try:
         # Query users and find matching username and password
-        user = session.query(Users).filter(Users.username == username,
-                                           Users.password == password
+        user = session.query(Users).filter(Users.user_username == username,
+                                           Users.user_password == password
                                            ).first()
 
         if not user:

@@ -13,8 +13,8 @@ async def post_new_user(payload: UserSchema):
     session = SessionLocal()
 
     user_data = Users(
-        username = payload.username,
-        password = payload.password
+        user_username = payload.username,
+        user_password = payload.password
     )
 
     try:
