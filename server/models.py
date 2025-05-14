@@ -7,12 +7,12 @@ Base = declarative_base()
 class Users(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    username = Column(VARCHAR(4), nullable=False)
-    password = Column(VARCHAR(180), nullable=False)
+    user_id = Column(Integer, primary_key=True, nullable=False)
+    user_username = Column(VARCHAR(4), nullable=False)
+    user_password = Column(VARCHAR(180), nullable=False)
 
-class Vehicle(Base):
-    __tablename__ = 'vehicle'
+class Vehicles(Base):
+    __tablename__ = 'vehicles'
 
     vehicle_id = Column(Integer, primary_key=True, autoincrement=True)
     vehicle_plate = Column(VARCHAR(20), nullable=False)
@@ -21,17 +21,18 @@ class TrackerTypeEnum(enum.Enum):
     lte = "lte"
     lora = "lora"
 
-class Tracker(Base):
-    __tablename__ = 'tracker'
+class Trackers(Base):
+    __tablename__ = 'trackers'
 
     tracker_id = Column(Integer, primary_key=True, autoincrement=True)
+    tracker_identifier = Column(VARCHAR(20), nullable=False)
     tracker_type = Column(Enum(TrackerTypeEnum), nullable=False)
-    tracker_on_site = Column(Boolean, default=False, nullable=False)
+    tracker_on_site = Column(Boolean, default=True, nullable=False)
     tracker_battery_low = Column(Boolean, default=False, nullable=False)
     vehicle_id = Column(Integer, ForeignKey('vehicle.vehicle_id'))
 
-class Position(Base):
-    __tablename__ = 'position'
+class Positions(Base):
+    __tablename__ = 'positions'
 
     position_id = Column(Integer, primary_key=True, autoincrement=True)
     position_timestamp = Column(TIMESTAMP)
