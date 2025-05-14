@@ -18,7 +18,7 @@ class Vehicle(Base):
     vehicle_plate = Column(VARCHAR(20), nullable=False)
 
 class TrackerTypeEnum(enum.Enum):
-    gps = "gps"
+    lte = "lte"
     lora = "lora"
 
 class Tracker(Base):
