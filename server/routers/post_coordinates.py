@@ -1,5 +1,5 @@
 from models import Positions
-from schemas import Coordinates
+from schemas import CoordinatesSchema
 from database import SessionLocal
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 router = APIRouter()
 
 @router.post("/post_coordinates")
-async def post_request(payload: Coordinates):
+async def post_request(payload: CoordinatesSchema):
     
     session = SessionLocal()
 
