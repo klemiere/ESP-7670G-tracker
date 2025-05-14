@@ -25,15 +25,17 @@ class TrackerResponse(BaseModel):
     tracker_battery_low: bool
     vehicle_id: Optional[int] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 class VehicleResponse(BaseModel):
     vehicle_id: int
     vehicle_plate: str
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class AddVehicleToTrackerSchema(BaseModel):
