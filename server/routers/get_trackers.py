@@ -10,25 +10,28 @@ router = APIRouter()
 
 @router.get("/get_trackers", response_model=List[TrackerResponse])
 async def get_trackers(
-    tracker_id: int = Query(0, title="Tracker ID")):
+    tracker_identifier: str = Query("", title="Tracker identifier")):
     
     session = SessionLocal()
 
     try:
-        # If tracker_id = 0 return all trackers
-        if tracker_id == 0:
+        # If tracker_identifier is empty, assume all trackers must be returned
+        if tracker_identifier == "":
             trackers = session.query(Trackers).all()
 
             return trackers
         
         else:
-            tracker = session.query(Trackers).filter(Trackers.tracker_id == tracker_id).first()
+            tracker = session.query(Trackers).filter(Trackers.tracker_identifier == tracker_identifier).first()
 
             if not tracker:
-                return {"message": "No tracker with this ID found."}
+                raise HTTPException(status_code=404, detail="No tracker with this identifier found.")
             
-            return tracker
+            return [tracker]
 
+    except HTTPException as e:
+        raise e
+    
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
