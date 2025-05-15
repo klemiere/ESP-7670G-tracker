@@ -9,7 +9,7 @@ class Users(Base):
     __tablename__ = 'users'
 
     user_id = Column(Integer, primary_key=True, nullable=False)
-    user_username = Column(String(4), nullable=False)
+    user_username = Column(String(24), nullable=False)
     user_password = Column(String(180), nullable=False)
 
 class Vehicles(Base):
