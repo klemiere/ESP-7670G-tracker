@@ -1,6 +1,7 @@
 from models import Users
 from schemas import UserSchema
 from database import SessionLocal
+import bcrypt
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -12,9 +13,12 @@ async def post_new_user(payload: UserSchema):
     
     session = SessionLocal()
 
+    # encode password to bytes and hash it
+    hashed_password = bcrypt.hashpw(payload.password.encode('utf-8'), bcrypt.gensalt())
+
     user_data = Users(
         user_username = payload.username,
-        user_password = payload.password
+        user_password = hashed_password.decode('utf-8') # decode into string
     )
 
     try:
