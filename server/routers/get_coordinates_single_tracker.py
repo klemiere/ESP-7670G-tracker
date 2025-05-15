@@ -1,8 +1,10 @@
 from database import SessionLocal
 from models import Positions, Trackers
 from schemas import CoordinatesResponse
+from converters import to_coordinates_response
 from fastapi import APIRouter, Query, HTTPException
 from typing import List
+from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -23,12 +25,17 @@ async def get_positions_single_tracker(
 
     try:
         # Query positions, sort by timestamp descending, retrieve a "limit" amount of datapoints and put them in a "position" list
-        positions = session.query(Positions).filter(Positions.tracker_id == tracker.tracker_id).order_by(Positions.position_timestamp.desc()).limit(limit).all()
+        positions = session.query(Positions)\
+            .filter(Positions.tracker_id == tracker.tracker_id)\
+            .options(joinedload(Positions.tracker))\
+            .order_by(Positions.position_timestamp.desc())\
+            .limit(limit)\
+            .all()
 
         if not positions:
             raise HTTPException(status_code=404, detail=f"No positions for {tracker_identifier} found")
         
-        return positions
+        return to_coordinates_response(positions)
     
     except HTTPException as e:
         raise e

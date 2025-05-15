@@ -19,8 +19,8 @@ class TrackerSchema(BaseModel):
     tracker_type: TrackerTypeEnum
 
 class CoordinatesResponse(BaseModel):
-    tracker_id: int
     position_id: int
+    tracker_identifier: str
     position_timestamp: datetime
     position_lat: Decimal
     position_long: Decimal

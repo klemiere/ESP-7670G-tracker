@@ -1,6 +1,7 @@
 from schemas import CoordinatesResponse
 from models import Positions
 from database import SessionLocal
+from converters import to_coordinates_response
 from fastapi import APIRouter, Query, HTTPException
 from typing import List
 from sqlalchemy import func
@@ -42,7 +43,7 @@ async def get_positions_all_trackers(limit: int = Query(1, title="limit",
         if not results:
             raise HTTPException(status_code=404, detail="No positions found.")
         
-        return results
+        return to_coordinates_response(results)
     
     except HTTPException as e:
         raise

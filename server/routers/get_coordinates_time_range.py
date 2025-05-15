@@ -1,5 +1,8 @@
 from database import SessionLocal
 from models import Positions, Trackers
+from schemas import CoordinatesResponse
+from converters import to_coordinates_response
+from typing import List
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
@@ -7,7 +10,7 @@ from datetime import datetime
 
 router = APIRouter()
 
-@router.get("/get_coordinates_time_range")
+@router.get("/get_coordinates_time_range", response_model=List[CoordinatesResponse])
 async def get_positions_time_range(tracker_identifier: str = Query(..., title="Tracker identifier",
                                                            description="ID of the tracker to query."), 
                                     start_time: str = Query(..., title="start_time",
@@ -18,6 +21,7 @@ async def get_positions_time_range(tracker_identifier: str = Query(..., title="T
     session = SessionLocal()
 
     tracker = session.query(Trackers).filter(Trackers.tracker_identifier == tracker_identifier).first()
+    
     if not tracker:
         raise HTTPException(status_code=404, detail=f"tracker: {tracker_identifier} not found.")
     
@@ -36,7 +40,7 @@ async def get_positions_time_range(tracker_identifier: str = Query(..., title="T
         if not positions:
             raise HTTPException(status_code=404, detail=f"No positions for {tracker_identifier} found")
 
-        return positions
+        return to_coordinates_response(positions)
 
     except HTTPException as e:
         raise e

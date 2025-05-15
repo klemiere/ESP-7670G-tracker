@@ -35,6 +35,7 @@ class Trackers(Base):
     vehicle_id = Column(Integer, ForeignKey('vehicles.vehicle_id'))
 
     vehicle = relationship("Vehicles", back_populates="trackers")
+    positions = relationship("Positions", back_populates="tracker")
 
 class Positions(Base):
     __tablename__ = 'positions'
@@ -44,3 +45,5 @@ class Positions(Base):
     position_lat = Column(Numeric, nullable=False)
     position_long = Column(Numeric, nullable=False)
     tracker_id = Column(Integer, ForeignKey('trackers.tracker_id'))
+
+    tracker = relationship("Trackers", back_populates="positions")
