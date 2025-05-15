@@ -1,5 +1,6 @@
 from models import Users
 from database import SessionLocal
+import bcrypt
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -15,12 +16,11 @@ async def get_user(
 
     try:
         # Query users and find matching username and password
-        user = session.query(Users).filter(Users.user_username == username,
-                                           Users.user_password == password
-                                           ).first()
+        user = session.query(Users).filter(Users.user_username == username).first()
 
-        if not user:
+        if not user or not (bcrypt.checkpw(password.encode(), user.user_password.encode())):
             raise HTTPException(status_code=404, detail="Invalid credentials")
+            
         
         # Managing auth (or most of this API really) is NOT part of my tasks so I'm not making it any more complicated than this
         return {"message": "OK"}
