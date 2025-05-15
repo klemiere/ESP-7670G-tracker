@@ -1,9 +1,11 @@
+from database import SessionLocal
 from models import Trackers
 from schemas import TrackerResponse
-from database import SessionLocal
+from converters import to_tracker_response
 from fastapi import APIRouter, Query, HTTPException
 from typing import List
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
 
 
 router = APIRouter()
@@ -17,17 +19,19 @@ async def get_trackers(
     try:
         # If tracker_identifier is empty, assume all trackers must be returned
         if tracker_identifier == "":
-            trackers = session.query(Trackers).all()
-
-            return trackers
+            trackers = session.query(Trackers).options(joinedload(Trackers.vehicle)).all()
+            return [to_tracker_response(t) for t in trackers]
         
         else:
-            tracker = session.query(Trackers).filter(Trackers.tracker_identifier == tracker_identifier).first()
+            tracker = session.query(Trackers)\
+                .filter(Trackers.tracker_identifier == tracker_identifier)\
+                .options(joinedload(Trackers.vehicle))\
+                .first()
 
             if not tracker:
                 raise HTTPException(status_code=404, detail="No tracker with this identifier found.")
             
-            return [tracker]
+            return [to_tracker_response(tracker)]
 
     except HTTPException as e:
         raise e

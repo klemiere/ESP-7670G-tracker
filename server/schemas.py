@@ -31,8 +31,16 @@ class CoordinatesResponse(BaseModel):
 
     #Remove the T from the datetime object for consistency
     @field_serializer("position_timestamp")
-    def serialize_timestamp(self, dt: datetime, _info):
+    def serialize_timestamp(self, dt: datetime):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+class VehicleResponse(BaseModel):
+    vehicle_id: int
+    vehicle_plate: str
+
+    model_config = {
+        "from_attributes": True
+    }
 
 class TrackerResponse(BaseModel):
     tracker_id: int
@@ -40,15 +48,7 @@ class TrackerResponse(BaseModel):
     tracker_type: TrackerTypeEnum
     tracker_on_site: bool
     tracker_battery_low: bool
-    vehicle_id: Optional[int] = None
-
-    model_config = {
-        "from_attributes": True
-    }
-
-class VehicleResponse(BaseModel):
-    vehicle_id: int
-    vehicle_plate: str
+    vehicle_plate: Optional[str] = None
 
     model_config = {
         "from_attributes": True
