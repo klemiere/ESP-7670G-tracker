@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 router = APIRouter()
 
-@router.post("/post_check_user")
+@router.post("/post_authenticate_user")
 async def get_user(payload: UserSchema):
     
     session = SessionLocal()
