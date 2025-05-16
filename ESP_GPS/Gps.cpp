@@ -89,14 +89,14 @@ String Gps::getLatitude(String gnssArray[]){
   if (gnssArray[0] == "") return "Invalid Latitude";
   char buffer[20];
   sprintf(buffer, "%.6f", convertToDecimalDegrees(gnssArray[0]));
-  return String(buffer) + " " + gnssArray[1];
+  return String(buffer);//  + " " + gnssArray[1];
 }
 
 String Gps::getLongitude(String gnssArray[]){
   if (gnssArray[2] == "") return "Invalid Longitude";
   char buffer[20];
   sprintf(buffer, "%.6f", convertToDecimalDegrees(gnssArray[2]));
-  return String(buffer) + " " + gnssArray[3];
+  return String(buffer);// + " " + gnssArray[3];
 }
 
 
