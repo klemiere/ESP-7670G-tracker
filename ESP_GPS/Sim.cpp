@@ -177,6 +177,9 @@ String Sim::getDateTime(){
   int start = response.indexOf("\"") + 1;
   int end = response.indexOf("+", start);
   String timeData = response.substring(start, end);
+  timeData.replace(",", " ");
+  timeData.replace("/", "-");
+  timeData = "20" + timeData; // I'm sure this is fine
 
   return timeData;
   

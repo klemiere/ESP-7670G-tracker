@@ -1,5 +1,6 @@
 #include "Sim.h"
 #include "Gps.h"
+#include "esp_sleep.h"
 
 #define RX_PIN 17 //SIM7670 TX
 #define TX_PIN 18 //SIM7670 RX
@@ -9,6 +10,7 @@ HardwareSerial sim7670(1);  // UART1
 Sim sim(sim7670);
 Gps gps(sim);
 
+String trackerIdentifier = "";
 
 void setup() {
 
@@ -20,6 +22,7 @@ void setup() {
   sim.init();
   Serial.println("Sim module initialized!");
   delay(2000);
+  String trackerIdentifier = sim.getICCID();
 
   Serial.println("Setting time...");
   sim.sendAT("AT+CSQ");
@@ -37,18 +40,17 @@ void setup() {
 }
 
 void loop() {
-  String response = sim.getICCID();
-  Serial.println("ICCID: ");
-  Serial.println(response);
 
   String gnssArray[25];
   gps.getGnssRawData(gnssArray);
-  String trackerIdentifier = sim.getICCID();
   String dateTime = sim.getDateTime();
   String latitude = gps.getLatitude(gnssArray);
   String longitude = gps.getLongitude(gnssArray);
 
   String json = sim.serialize(trackerIdentifier, dateTime, latitude, longitude);
-  //sim.sendData("http://51.178.25.133:8000/post_coordinates", json);
-  Serial.println(json);
+  sim.sendData("http://51.178.25.133:8000/post_coordinates", json);
+  Serial.flush();
+  esp_sleep_enable_timer_wakeup(3600 * 1000000); // 1 hour in microseconds
+  esp_light_sleep_start();
+
 }
