@@ -10,7 +10,7 @@ String Sim::sendAT(String command, unsigned int timeoutInSeconds) {
   simModule.println(command);
 
   String response = "";
-  int timeOutInMillis = timeoutInSeconds * 1000;
+  int timeoutInMillis = timeoutInSeconds * 1000;
   unsigned long startMillis = millis();
   unsigned long lastRead = millis();
 
