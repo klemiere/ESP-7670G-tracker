@@ -6,23 +6,25 @@
 Sim::Sim(HardwareSerial& serial) : simModule(serial){
 }
 
-
 String Sim::sendAT(String command, unsigned int timeoutInSeconds) {
-  unsigned int timeoutInMillis = timeoutInSeconds * 1000;
   simModule.println(command);
 
   String response = "";
-  unsigned long startMillis = millis(); // Start time for timeout
+  int timeOutInMillis = timeoutInSeconds * 1000;
+  unsigned long startMillis = millis();
+  unsigned long lastRead = millis();
 
-  while (millis() - startMillis < timeoutInMillis) {
+  while ((millis() - lastRead) < 1000 && (millis() - startMillis) < timeoutInMillis) {
     while (simModule.available()) {
       char c = simModule.read();
       response += c;
       Serial.print(c);
+      lastRead = millis(); // reset timer
     }
+    delay(10); // give time for data to arrive (maybe useless??)
   }
 
-  Serial.println(); // Finish line
+  Serial.println(); // newline for neat output
   return response;
 }
 
@@ -122,7 +124,7 @@ String Sim::httpPostRequest(String url, String payload, int timeOutInSeconds){
   simModule.println(",10000");
 
   if (waitForDownloadPrompt()) {
-    simModule.print(payload);  // Send your JSON string
+    simModule.print(payload);  // Send JSON string
   } else {
     Serial.println("Timeout waiting for DOWNLOAD prompt");
   }
@@ -147,21 +149,45 @@ String Sim::httpGetRequest(String url, int timeOutInSeconds){
   return responseData;
 }
 
+String Sim::getICCID(){
+  String response = sendAT("AT+CICCID");
+  String iccid = "";
+
+  // Start at ICCID
+  int index = response.indexOf(": ");
+  if (index != -1) {
+    iccid = response.substring(index + 2);
+
+    // Remove trailing F
+    iccid.trim();
+    while (!isdigit(iccid.charAt(iccid.length() - 1))) {
+      iccid.remove(iccid.length() - 1);
+    }
+
+    if (iccid.length() > 15) {
+      iccid = iccid.substring(iccid.length() - 15); // return only what's printed on the sim
+    }
+  }
+
+  return iccid;
+}
+
 String Sim::getDateTime(){
   String response = sendAT("AT+CCLK?");
   int start = response.indexOf("\"") + 1;
-  int end = response.indexOf("\"", start);
+  int end = response.indexOf("+", start);
   String timeData = response.substring(start, end);
 
   return timeData;
   
 }
 
-String Sim::serialize(String latitude, String longitude, String dateTime){
+String Sim::serialize(String trackerIdentifier, String dateTime, String latitude, String longitude){
   String jsonPayload = "{";
+  jsonPayload += "\"tracker_identifier\":\"" + trackerIdentifier + "\",";
+  jsonPayload += "\"timestamp\":\"" + dateTime + "\",";
   jsonPayload += "\"latitude\":\"" + latitude + "\",";
-  jsonPayload += "\"longitude\":\"" + longitude + "\",";
-  jsonPayload += "\"datetime\":\"" + dateTime + "\"";
+  jsonPayload += "\"longitude\":\"" + longitude + "\"";
   jsonPayload += "}";
   return jsonPayload;
 }

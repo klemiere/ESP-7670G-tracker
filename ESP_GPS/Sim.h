@@ -10,8 +10,9 @@ class Sim {
     void init();
     String httpGetRequest(String url = "http://51.178.25.133:8000/test_route", int timeOutInSeconds = 2);
     String httpPostRequest(String url, String payload, int timeOutInSeconds = 2);
+    String getICCID();
     String getDateTime();
-    String serialize(String latitude, String longitude, String dateTime);
+    String serialize(String trackerIdentifier, String dateTime, String latitude, String longitude);
     int sendData(String url, String payload);
   private:
     HardwareSerial& simModule;
