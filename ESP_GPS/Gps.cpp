@@ -11,11 +11,11 @@ String Gps::sendAT(String command, unsigned int timeoutInSeconds){
 
 void Gps::init(){
   sendAT("AT+CGNSSPWR=1"); //power on
-  sendAT("AT+CGNSSTST=1"); //sed data from uart3 to nmea port
+  sendAT("AT+CGNSSTST=1"); //send data from uart3 to nmea port
   sendAT("AT+CGPSCOLD"); //cold start gps
   sendAT("AT+CGNSSIPR=115200"); // Set baud rate of UART3 and GPS module
   
-  sendAT("AT+CGNSSMODE=1"); //
+  sendAT("AT+CGNSSMODE=1");
   /*1 GPS
     3 GPS + GLONASS
     5 GPS + GALILEO
@@ -25,7 +25,8 @@ void Gps::init(){
     The function will take effect immediately. */
     
   sendAT("AT+CGNSSNMEA=1,0,0,0,0,0,0,0,0,0");
-  /*nGGA GGA output rate,default is 1
+  /* The following are the meaning of each digit per the documentation
+    nGGA GGA output rate,default is 1
     nGLL GLL output rate,default is 1
     nGSA GSA output rate,default is 1
     nGSV GSV output rate,default is 1
@@ -46,15 +47,6 @@ void Gps::getGnssRawData(String* gnssArray){
     gnssResponse = sendAT("AT+CGPSINFO");
     delay(5000);
   } while (gnssResponse.indexOf(": ,") != -1);
-
-  // Check if the reponse contains GNSS data
-  if (gnssResponse.indexOf("+CGPSINFO:") > 0) {
-        Serial.println("Received GNSS info: " + gnssResponse); // Print for debugging
-  } 
-  else {
-        Serial.println("No GNSS data");
-        return;
-  }
         
   // Extract the raw GNSS data part from the response
   int start = gnssResponse.indexOf("+CGPSINFO:") + 11;
