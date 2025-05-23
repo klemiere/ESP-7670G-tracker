@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 router = APIRouter()
 
 @router.post("/post_coordinates")
-async def post_request(payload: CoordinatesSchema):
+async def post_coordinates(payload: CoordinatesSchema):
     
     session = SessionLocal()
 
